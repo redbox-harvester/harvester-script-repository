@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd">
+
+    <bean id="placeholderProperties" class="au.com.redboxresearchdata.util.config.ConfigSlurperPlaceholderConfigurer">
+        <property name="environment" value="#{grailsApplication.getConfig().get('environment')}"/>
+        <property name="defaultEnvironment" value="production" />
+        <property name="config" value="#{grailsApplication.getConfig().get('clientConfigObj')}" />
+    </bean>
+
+</beans>

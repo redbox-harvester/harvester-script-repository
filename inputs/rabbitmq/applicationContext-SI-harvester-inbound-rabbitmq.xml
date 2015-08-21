@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:int="http://www.springframework.org/schema/integration"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:int-amqp="http://www.springframework.org/schema/integration/amqp"
+       xmlns:rabbit="http://www.springframework.org/schema/rabbit"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans
+      http://www.springframework.org/schema/beans/spring-beans.xsd
+      http://www.springframework.org/schema/integration
+      http://www.springframework.org/schema/integration/spring-integration.xsd
+      http://www.springframework.org/schema/integration/amqp
+      http://www.springframework.org/schema/integration/amqp/spring-integration-amqp.xsd
+      http://www.springframework.org/schema/rabbit
+      http://www.springframework.org/schema/rabbit/spring-rabbit.xsd">
+
+    <rabbit:admin connection-factory="rabbitConnectionFactory"/>
+    <rabbit:connection-factory host="${harvest.rabbitmq.url}" port="${harvest.rabbitmq.port}" id="rabbitConnectionFactory"
+        password="${harvest.rabbitmq.password}" username="${harvest.rabbitmq.username}"/>
+    <rabbit:template connection-factory="rabbitConnectionFactory" id="amqpTemplate"/>
+    <rabbit:queue id='${harvest.rabbitmq.queuename}' name='${harvest.rabbitmq.queuename}'/>
+
+    <int-amqp:channel id="inboundChannel" message-driven="false" queue-name="${harvest.rabbitmq.queuename}"/>
+    <int:poller default="true" fixed-rate="${harvest.pollRate}"/>
+
+</beans>

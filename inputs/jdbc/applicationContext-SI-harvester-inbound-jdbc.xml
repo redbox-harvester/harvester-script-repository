@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:int="http://www.springframework.org/schema/integration"
+       xmlns:int-jdbc="http://www.springframework.org/schema/integration/jdbc"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:int-jmx="http://www.springframework.org/schema/integration/jmx"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans
+       http://www.springframework.org/schema/beans/spring-beans.xsd
+       http://www.springframework.org/schema/integration
+       http://www.springframework.org/schema/integration/spring-integration.xsd
+       http://www.springframework.org/schema/integration/jdbc
+       http://www.springframework.org/schema/integration/jdbc/spring-integration-jdbc.xsd
+       http://www.springframework.org/schema/integration/jmx
+       http://www.springframework.org/schema/integration/jmx/spring-integration-jmx.xsd">
+    <!-- Configuration file for harvesting from a DB table using  JDBC.-->
+    <int-jmx:mbean-export default-domain="au.com.redboxresearchdata.harvester.client.sample.jdbc" server="mbeanServer"/>
+    <bean id="mbeanServer" class="org.springframework.jmx.support.MBeanServerFactoryBean"/>
+
+    <int-jdbc:inbound-channel-adapter query="${harvest.jdbc.Dataset.query}" id="inboundChannel"
+        channel="datasetIn" data-source="dataSource" select-sql-parameter-source="datasetConfigSqlParamSource"/>
+    <int:poller default="true" receive-timeout="${harvest.pollTimeout}" fixed-rate="${harvest.pollRate}">
+        <int:transactional isolation="SERIALIZABLE"/>
+    </int:poller>
+    <bean id="transactionManager" class="org.springframework.jdbc.datasource.DataSourceTransactionManager">
+        <property name="dataSource" ref="dataSource"/>
+    </bean>
+    <bean id="dataSource" class="org.apache.commons.dbcp.BasicDataSource" destroy-method="close">
+        <property name="driverClassName" value="${harvest.jdbc.driver}"/>
+        <property name="url" value="${harvest.jdbc.url}"/>
+        <property name="username" value="${harvest.jdbc.user}"/>
+        <property name="password" value="${harvest.jdbc.pw}"/>
+    </bean>
+    <bean id="datasetConfigSqlParamSource" class="au.com.redboxresearchdata.jdbc.ConfigSqlParameterSource">
+        <property name="config" value="#{placeholderProperties.config}"/>
+        <property name="type" value="Dataset"/>
+    </bean>
+</beans>

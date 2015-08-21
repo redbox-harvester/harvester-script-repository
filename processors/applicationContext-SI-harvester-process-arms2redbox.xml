@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:int="http://www.springframework.org/schema/integration"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:lang="http://www.springframework.org/schema/lang"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans
+  http://www.springframework.org/schema/beans/spring-beans.xsd
+  http://www.springframework.org/schema/integration
+  http://www.springframework.org/schema/integration/spring-integration.xsd
+  http://www.springframework.org/schema/lang
+  http://www.springframework.org/schema/lang/spring-lang.xsd">
+
+    <int:transformer input-channel="processChannel" output-channel="outboundChannel" method="handleJson" ref="arms2redboxmapper"/>
+
+    <lang:groovy id="arms2redboxmapper" script-source="file:./resources/scripts/arms2redboxmapper.groovy">
+        <lang:property name="config" value="#{placeholderProperties.config}"/>
+    </lang:groovy>
+
+</beans>
