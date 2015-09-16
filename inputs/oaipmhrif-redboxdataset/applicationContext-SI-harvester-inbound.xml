@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:int="http://www.springframework.org/schema/integration"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:script="http://www.springframework.org/schema/integration/scripting"
+       xmlns:int-groovy="http://www.springframework.org/schema/integration/groovy"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans
+      http://www.springframework.org/schema/beans/spring-beans.xsd
+      http://www.springframework.org/schema/integration
+      http://www.springframework.org/schema/integration/spring-integration.xsd
+      http://www.springframework.org/schema/integration/scripting 
+      http://www.springframework.org/schema/integration/scripting/spring-integration-scripting.xsd 
+      http://www.springframework.org/schema/integration/groovy http://www.springframework.org/schema/integration/groovy/spring-integration-groovy.xsd
+      ">
+
+    <int:inbound-channel-adapter  channel="inboundChannel">
+      <int:poller max-messages-per-poll="1" fixed-delay="${harvest.pollRate}"/>
+      <int-groovy:script location="${harvest.oaiPmh.inboundScript}" refresh-check-delay="${harvest.pollRate}">
+        <int-groovy:variable name='config' value="#{placeholderProperties.config}" />
+      </int-groovy:script>
+    </int:inbound-channel-adapter>
+
+</beans>

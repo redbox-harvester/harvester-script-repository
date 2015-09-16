@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:int="http://www.springframework.org/schema/integration"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans
+  http://www.springframework.org/schema/beans/spring-beans.xsd
+  http://www.springframework.org/schema/integration
+  http://www.springframework.org/schema/integration/spring-integration.xsd">
+
+	<!-- This is a parent application context for spring integration. Global 
+		configuration and logging definitions can be placed here. Specific implementations 
+		of inbound channels, processing/transformation, and outbound channels are 
+		created in imported resources. The 'inbound', 'process' and 'outbound' ids 
+		must be referenced by the relevant imported resources. For environment properties, 
+		choose either the console or manager placeholder properties. The imported 
+		resources must reference this placeholder properties id in order to use the 
+		configured environment properties -->
+
+	<!-- import resources for 'inbound', 'process' and 'outbound' here -->
+	<import resource="applicationContext-SI-harvester-inbound.xml" />
+	<import resource="applicationContext-SI-harvester-process.xml" />
+	<import resource="applicationContext-SI-harvester-outbound.xml" />
+
+	<!-- Where possible, state channel order here, rather than in imported resources. 
+		The inbound channel adapter will always run before the logging, so chain 
+		inbound logging explictly between inbound and process channel -->
+	<int:bridge input-channel="inboundChannel" output-channel="processChannel" />
+
+	<!-- inbound logging channel. This will always follow the inbound channel 
+		adapter. -->
+	<int:channel id="inboundLogging">
+		<int:interceptors>
+			<int:wire-tap channel="inboundloggingChannel" />
+		</int:interceptors>
+	</int:channel>
+	<int:logging-channel-adapter expression="'Message has completed inbound channel'"
+		id="inboundloggingChannel" />
+
+	<!-- process Channel. This id must match the input channel in imported 'process' 
+		resource The process channel context must specify input channel as 'processChannel' 
+		and output channel as 'outboundChannel'. -->
+	<int:channel id="processChannel">
+		<int:interceptors>
+			<int:wire-tap channel="processloggingChannel" />
+		</int:interceptors>
+	</int:channel>
+
+	<int:logging-channel-adapter expression="'Message entering process channel'"
+		id="processloggingChannel" />
+
+	<!-- outbound Channel. This id must match the id in imported 'outbound' 
+		resource -->
+	<int:channel id="outboundChannel">
+		<int:interceptors>
+			<int:wire-tap channel="outboundloggingChannel" />
+		</int:interceptors>
+	</int:channel>
+	<int:logging-channel-adapter expression="'Message entering outbound channel'"
+		id="outboundloggingChannel" />
+	<bean
+		class="au.com.redboxresearchdata.util.config.ConfigSlurperPlaceholderConfigurer"
+		id="placeholderProperties">
+		<property name="environment" value="#{systemProperties['environment']}" />
+		<property name="defaultEnvironment" value="production" />
+		<property name="location"
+			value="#{systemProperties['harvester.client.config.file']}" />
+	</bean>
+</beans>

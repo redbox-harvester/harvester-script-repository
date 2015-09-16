@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:int="http://www.springframework.org/schema/integration"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:script="http://www.springframework.org/schema/integration/scripting"
+       xmlns:int-groovy="http://www.springframework.org/schema/integration/groovy"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans
+      http://www.springframework.org/schema/beans/spring-beans.xsd
+      http://www.springframework.org/schema/integration
+      http://www.springframework.org/schema/integration/spring-integration.xsd
+      http://www.springframework.org/schema/integration/scripting 
+      http://www.springframework.org/schema/integration/scripting/spring-integration-scripting.xsd 
+      http://www.springframework.org/schema/integration/groovy http://www.springframework.org/schema/integration/groovy/spring-integration-groovy.xsd
+      ">
+
+
+  <int:splitter input-channel="processChannel" output-channel="xmlToJsonChannel">
+     <int-groovy:script> 
+        <![CDATA[
+          return payload
+        ]]>
+     </int-groovy:script>
+  </int:splitter>
+  
+  <int:service-activator input-channel="xmlToJsonChannel" output-channel="jsonToRbDsChannel">
+     <int-groovy:script location="${harvest.oaiPmh.xmlToJsonScript}" refresh-check-delay="${harvest.pollRate}"> 
+       <int-groovy:variable name='xslPath' value="#{placeholderProperties.config.harvest.oaiPmh.xslPath}" />
+     </int-groovy:script>
+  </int:service-activator>
+  
+  <int:service-activator input-channel="jsonToRbDsChannel" output-channel="dsHeaderChannel">
+     <int-groovy:script location="${harvest.oaiPmh.jsonRifToRbDsScript}" refresh-check-delay="${harvest.pollRate}"> 
+       <int-groovy:variable name='config' value="#{placeholderProperties.config}" />
+     </int-groovy:script>
+  </int:service-activator>
+  
+  <int:header-enricher input-channel="dsHeaderChannel" output-channel="outboundChannel">
+     <int:header name="type" value="dataset"/>
+  </int:header-enricher>
+  
+</beans>
