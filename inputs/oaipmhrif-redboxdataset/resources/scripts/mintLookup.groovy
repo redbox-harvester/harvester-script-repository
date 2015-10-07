@@ -16,11 +16,13 @@ import groovy.util.*
 import groovy.json.*
 import groovyx.net.http.*
 import static groovyx.net.http.ContentType.*
+import java.net.URLEncoder
   
 def jsonSlurper = new JsonSlurper()
 def payloadJson = jsonSlurper.parseText(payload)
 def tfpackage = payloadJson.data.data.tfpackage
 def client = new RESTClient( config.harvest.mintLookup.base)
+def nlaClient = new RESTClient(config.harvest.mintLookup.nlaBase)
   
 headers['mintLookup'].each { lookup ->
   def typeConfig = config.harvest.mintLookup.types[lookup.type]
@@ -34,10 +36,32 @@ headers['mintLookup'].each { lookup ->
         typeConfig.mapping.each { k,v ->
           def targetFld = "${typeConfig.baseFld}${lookup.idx}${k}"
           tfpackage[targetFld] = Eval.x(respJson, "x${v}")
-          println "****** Set tfpackage['${targetFld}'] = '${tfpackage[targetFld]}', using  expression '${v}' ********"
         }
       } else {
-        println "Lookup of type '${lookup.type}' had no result, using value: '${value}'"
+        if (lookup.type == 'person' && value.indexOf('nla') != -1) {
+          // lookup NLA
+          def nlaUri = new URIBuilder(nlaClient.uri.toString() + '%22' + URLEncoder.encode(value, 'UTF-8') + '%22')
+          def nlaResp = nlaClient.get(uri:nlaUri, contentType:XML)
+          if (nlaResp.status == 200) {
+            if (nlaResp.data.numberOfRecords != "0") {
+              def name1 = nlaResp.data.records.record[0].recordData['eac-cpf'].cpfDescription.identity.nameEntry.part[0]
+              def name2 = nlaResp.data.records.record[0].recordData['eac-cpf'].cpfDescription.identity.nameEntry.part[1]
+              if (name1['@localType'] == 'surname') {
+                tfpackage["${typeConfig.baseFld}${lookup.idx}.familyName"] = name1.text()
+                tfpackage["${typeConfig.baseFld}${lookup.idx}.givenName"] = name2.text()
+              } else {
+                tfpackage["${typeConfig.baseFld}${lookup.idx}.familyName"] = name2.text()
+                tfpackage["${typeConfig.baseFld}${lookup.idx}.givenName"] = name1.text()
+              }
+            } else {
+              println "NLA Lookup of type '${lookup.type}' had no result, using value: '${value}'"
+            }
+          } else {
+            println "NLA Lookup failed: ${nlaUri.toString()}, code: ${nlaResp.status}"
+          }
+        } else {
+          println "Lookup of type '${lookup.type}' had no result, using value: '${value}'"
+        }
       }
     } else {
       println "Lookup of type '${lookup.type}', using value: '${value}' HTTP request failed: ${resp.status}"

@@ -87,15 +87,15 @@ templateJson.data.data.with {
   // Rights
   if (regObj.collection.rights) {
     if (regObj.collection.rights.rightsStatement) {
-      tfpackage["dc:accessRights.dc:RightsStatement.skos:prefLabel"] = regObj.collection.rights.rightsStatement.$
+      tfpackage["dc:accessRights.dc:RightsStatement.skos:prefLabel"] = regObj.collection.rights.rightsStatement instanceof String ? regObj.collection.rights.rightsStatement : regObj.collection.rights.rightsStatement.$
       tfpackage["dc:accessRights.dc:identifier"] = regObj.collection.rights.rightsStatement instanceof String ? '' : regObj.collection.rights.rightsStatement?.rightsUri
     } 
     if (regObj.collection.rights.accessRights) {
-      tfpackage["dc:accessRights.skos:prefLabel"] = regObj.collection.rights.accessRights
+      tfpackage["dc:accessRights.skos:prefLabel"] = regObj.collection.rights.accessRights instanceof String ? regObj.collection.rights.accessRights : regObj.collection.rights.accessRights.$
       tfpackage["dc:accessRights.dc:RightsStatement.dc:identifier"] = regObj.collection.rights.accessRights instanceof String ? '' : regObj.collection.rights.accessRights?.rightsUri
     } 
     if (regObj.collection.rights.license) {
-      tfpackage["dc:license.skos:prefLabel"] = regObj.collection.rights.license
+      tfpackage["dc:license.skos:prefLabel"] = regObj.collection.rights.license instanceof String ? regObj.collection.rights.license : regObj.collection.rights.license.$
       tfpackage["dc:license.dc:identifier"] = regObj.collection.rights.license instanceof String ? '' : regObj.collection.rights.license?.rightsUri
     } 
   }
@@ -224,20 +224,6 @@ def addRelatedObj(relCtrs, relatedObj, tfpackage, msgHeaders) {
     relCtrs.person++
     return
   }
-  if (relType == 'hasAssociationWith') {
-    if (!tfpackage['relationships']) tfpackage['relationships'] = []
-    def newRel = [:]
-    newRel.with {
-      isCurated = true
-      curatedPid = relatedObj.key
-      relationship = 'hasAssociationWith'
-      description = relatedObj.relation?.description
-    }
-    tfpackage['relationships'] << newRel
-    return
-  }
-  // TODO: complete service mapping...
-  
 }
 
 def addCoverage(spatialCtr, coverageObj, tfpackage, srcDf, targetDf) {

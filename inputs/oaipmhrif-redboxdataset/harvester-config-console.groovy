@@ -34,6 +34,7 @@ harvest {
     }
     mintLookup {
       base = 'https://rdmp.sydney.edu.au/redbox/verNum1.8-SNAPSHOT/default/'
+      nlaBase = 'http://www.nla.gov.au/apps/srw/search/peopleaustralia?version=1.1&operation=searchRetrieve&recordSchema=urn%3Aisbn%3A1-931666-33-4&maximumRecords=10&startRecord=1&resultSetTTL=300&recordPacking=xml&recordXPath=&sortKeys=&query=dc.identifier+%3D+'
       types {
         anzsrc_for {
           uri = 'proxyGet.script?ns=ANZSRC_FOR&qs=searchTerms%3D'
@@ -51,7 +52,8 @@ harvest {
           mapping = ['.dc:identifier':".results[0]['dc:identifier'", 
                      '.foaf:name':".results[0]['rdfs:label'", 
                      '.foaf:givenName':".results[0]['result-metadata'].all.Given_Name[0]",
-                     '.foaf:familyName':".results[0]['result-metadata'].all.Family_Name[0]"
+                     '.foaf:familyName':".results[0]['result-metadata'].all.Family_Name[0]",
+                     '.foaf:title':".results[0]['result-metadata'].all.Honorific[0]"
                     ]
         }
       }
