@@ -13,6 +13,7 @@ The script will return a list of File instances.
 
 import ORG.oclc.oai.harvester2.verb.*
 import static java.util.UUID.randomUUID 
+import groovy.xml.XmlUtil
   
 def baseUrl = config.harvest.oaiPmh?.baseUrl
 def set = config.harvest.oaiPmh?.set 
@@ -32,7 +33,7 @@ def getRecords (resToken, baseUrl, from, until, set, mdPrefix, recordQuery) {
   
   for (def i=0; i < nodeList.getLength(); i++){
     def node = nodeList.item(i)
-    def recordXml = groovy.xml.XmlUtil.serialize(node)
+    def recordXml = XmlUtil.serialize(node)
     def uuid = randomUUID() as String
     def xmlFile = new File(config.harvest.oaiPmh?.outputDir + '/'+uuid.toUpperCase() + '.xml')
     xmlFile.getParentFile().mkdirs()
@@ -53,8 +54,7 @@ try {
     records = getRecords(records.resToken, baseUrl, from, until, set, mdPrefix, recordQuery)
     masterFileList.addAll(records.recordsFileList)
   }
-  println "**********************************"
-  println masterFileList.size()
+  println "Number of OAIPMH Records in this request: ${masterFileList.size()}"
   return masterFileList
 } catch (e) {
   return "Error: ${e}"

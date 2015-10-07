@@ -11,24 +11,49 @@ file {
     customPath = 'config/custom/harvester-config-console.groovy'
 }
 harvest {
-    pollRate = '60000' // determines how often to run the inboundScript below
-    pollTimeout = '60000'
+    pollRate = '1200000' // determines how often to run the inboundScript below
+    pollTimeout = '1200000'
     oaiPmh {
       inboundScript = 'resources/scripts/harvestOaipmh.groovy'
       xmlToJsonScript = 'resources/scripts/xmlToJson.groovy'
       jsonRifToRbDsScript = 'resources/scripts/jsonRifToRbDs.groovy'
+      mintLookupScript = 'resources/scripts/mintLookup.groovy'
       baseUrl = 'https://rdmp.sydney.edu.au/redbox/verNum1.8/published/feed/oai'
       outputDir = 'output/'
       fileOutput = ''
       metadataPrefix = 'rif'
       set = 'published'
-      from = '2014-06-30T02:27:20Z'
-      until = '2015-06-30T02:27:20Z'
+      from = '2015-05-24T06:27:33Z'
+      until = '2015-09-24T06:27:33Z'
       recordQuery = '/oai20:OAI-PMH/oai20:ListRecords/oai20:record'
       xslPath = 'resources/xslt/xml-to-json.xsl'
       redbox {
         datasetTemplatePath = 'resources/scripts/template-data/dataset-template.json'
         version = '1.9-SNAPSHOT'
+      }
+    }
+    mintLookup {
+      base = 'https://rdmp.sydney.edu.au/redbox/verNum1.8-SNAPSHOT/default/'
+      types {
+        anzsrc_for {
+          uri = 'proxyGet.script?ns=ANZSRC_FOR&qs=searchTerms%3D'
+          baseFld = 'dc:subject.anzsrc:for.'
+          mapping = ['.skos:prefLabel':".results[0]['skos:prefLabel']", '.rdf:about':".results[0]['rdf:about']"]
+        }
+        anzsrc_seo {
+          uri = 'proxyGet.script?ns=ANZSRC_SEO&qs=searchTerms%3D'
+          baseFld = 'dc:subject.anzsrc:seo.'
+          mapping = ['.skos:prefLabel':".results[0]['skos:prefLabel']", '.rdf:about':".results[0]['rdf:about']"]
+        }
+        person {
+          uri = 'proxyGet.script?ns=Parties_People&qs=searchTerms%3D'
+          baseFld = 'dc:creator.foaf:Person.'
+          mapping = ['.dc:identifier':".results[0]['dc:identifier'", 
+                     '.foaf:name':".results[0]['rdfs:label'", 
+                     '.foaf:givenName':".results[0]['result-metadata'].all.Given_Name[0]",
+                     '.foaf:familyName':".results[0]['result-metadata'].all.Family_Name[0]"
+                    ]
+        }
       }
     }
     activemq {

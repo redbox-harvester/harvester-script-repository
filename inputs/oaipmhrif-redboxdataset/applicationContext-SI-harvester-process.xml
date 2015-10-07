@@ -28,8 +28,14 @@
      </int-groovy:script>
   </int:service-activator>
   
-  <int:service-activator input-channel="jsonToRbDsChannel" output-channel="dsHeaderChannel">
+  <int:service-activator input-channel="jsonToRbDsChannel" output-channel="mintLookupChannel">
      <int-groovy:script location="${harvest.oaiPmh.jsonRifToRbDsScript}" refresh-check-delay="${harvest.pollRate}"> 
+       <int-groovy:variable name='config' value="#{placeholderProperties.config}" />
+     </int-groovy:script>
+  </int:service-activator>
+  
+  <int:service-activator input-channel="mintLookupChannel" output-channel="dsHeaderChannel">
+     <int-groovy:script location="${harvest.oaiPmh.mintLookupScript}" refresh-check-delay="${harvest.pollRate}"> 
        <int-groovy:variable name='config' value="#{placeholderProperties.config}" />
      </int-groovy:script>
   </int:service-activator>
